@@ -281,7 +281,7 @@ function ProjectChat({ projectId }: { projectId: number }) {
         ) : messages?.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-muted-foreground text-sm space-y-2">
             <Cpu className="w-8 h-8 opacity-50" />
-            <p>Ask me to draft emails, analyze code, or plan strategy.</p>
+            <p>Ask Dexi to draft emails, analyze code, or plan strategy.</p>
           </div>
         ) : (
           messages?.map(msg => (

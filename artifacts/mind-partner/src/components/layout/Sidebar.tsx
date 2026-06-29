@@ -61,7 +61,7 @@ export function Sidebar() {
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-mono text-emerald-500">SYSTEM ONLINE</span>
           </div>
-          <p className="text-xs text-muted-foreground">AI Co-Pilot is actively monitoring your projects.</p>
+          <p className="text-xs text-muted-foreground">Dexi is actively monitoring your projects.</p>
         </div>
       </div>
     </aside>

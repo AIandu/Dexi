@@ -46,8 +46,8 @@ export default function GlobalChat() {
           <BrainCircuit className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold tracking-tight">System Core</h1>
-          <p className="text-xs text-primary font-mono mt-0.5">MindPartner AI is active.</p>
+          <h1 className="text-xl font-bold tracking-tight">Dexi</h1>
+          <p className="text-xs text-primary font-mono mt-0.5">AI Co-Pilot is active and ready.</p>
         </div>
       </header>
 
@@ -59,8 +59,8 @@ export default function GlobalChat() {
             <div className="w-16 h-16 rounded-2xl bg-black border border-white/5 flex items-center justify-center shadow-[0_0_30px_rgba(124,58,237,0.1)]">
               <Cpu className="w-8 h-8 text-primary" />
             </div>
-            <h2 className="text-lg font-medium text-foreground">Welcome to the Command Center</h2>
-            <p>I am your business co-pilot. I have context on all your projects, contacts, and emails. How can we grow the empire today?</p>
+            <h2 className="text-lg font-medium text-foreground">I'm Dexi, your AI Co-Pilot</h2>
+            <p>I have context on all your projects, contacts, and emails. How can we grow the empire today?</p>
           </div>
         ) : (
           <div className="max-w-4xl mx-auto space-y-6">
@@ -100,7 +100,7 @@ export default function GlobalChat() {
           <Input
             value={content}
             onChange={e => setContent(e.target.value)}
-            placeholder="Instruct Co-Pilot..."
+            placeholder="Ask Dexi anything..."
             className="w-full pl-6 pr-14 py-6 bg-black/60 border-white/10 rounded-xl text-base shadow-[0_0_15px_rgba(0,0,0,0.5)] focus-visible:ring-primary focus-visible:border-primary transition-all placeholder:font-mono placeholder:text-muted-foreground/50"
             disabled={sendMsg.isPending}
             autoFocus
