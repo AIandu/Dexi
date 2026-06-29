@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "MindPartner — AI Business Co-Pilot"
+version = "1.0.0"
+id = "artifacts/mind-partner"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22147
+
+[services.development]
+run = "pnpm --filter @workspace/mind-partner run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mind-partner", "run", "build" ]
+publicDir = "artifacts/mind-partner/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22147"
+BASE_PATH = "/"

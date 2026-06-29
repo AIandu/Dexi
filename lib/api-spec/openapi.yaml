@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: MindPartner AI Business Co-Pilot API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: projects
+    description: Project management
+  - name: contacts
+    description: Contact management
+  - name: outreach
+    description: Email outreach
+  - name: chat
+    description: AI chat
+  - name: dashboard
+    description: Dashboard stats
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +34,469 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Projects ──────────────────────────────────────────────────────────────
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List all projects
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project manually
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/import-github:
+    post:
+      operationId: importGithubRepos
+      tags: [projects]
+      summary: Import repos from GitHub usernames
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubImportInput"
+      responses:
+        "200":
+          description: Imported projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get project by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{id}/analyze:
+    post:
+      operationId: analyzeProject
+      tags: [projects]
+      summary: AI-analyze project to generate summary, value prop, target audience
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Analysis result merged into project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}/whitepaper:
+    post:
+      operationId: generateWhitepaper
+      tags: [projects]
+      summary: Generate a white paper / pitch document for the project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Generated white paper text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhitepaperResult"
+
+  /projects/{id}/suggestions:
+    get:
+      operationId: getProjectSuggestions
+      tags: [projects]
+      summary: AI improvement and sales suggestions for the project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuggestionsResult"
+
+  # ── Contacts ──────────────────────────────────────────────────────────────
+  /contacts:
+    get:
+      operationId: listContacts
+      tags: [contacts]
+      summary: List all contacts
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      operationId: createContact
+      tags: [contacts]
+      summary: Add a contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Created contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+
+  /contacts/{id}:
+    get:
+      operationId: getContact
+      tags: [contacts]
+      summary: Get contact by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+    patch:
+      operationId: updateContact
+      tags: [contacts]
+      summary: Update a contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactUpdate"
+      responses:
+        "200":
+          description: Updated contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+    delete:
+      operationId: deleteContact
+      tags: [contacts]
+      summary: Delete a contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /contacts/discover:
+    post:
+      operationId: discoverContacts
+      tags: [contacts]
+      summary: AI-discover potential contacts for a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoverContactsInput"
+      responses:
+        "200":
+          description: Discovered contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContactSuggestion"
+
+  # ── Outreach ───────────────────────────────────────────────────────────────
+  /outreach:
+    get:
+      operationId: listOutreach
+      tags: [outreach]
+      summary: List all email drafts / campaigns
+      responses:
+        "200":
+          description: List of outreach emails
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutreachEmail"
+    post:
+      operationId: createOutreach
+      tags: [outreach]
+      summary: Create an email draft (AI-generated or manual)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OutreachInput"
+      responses:
+        "201":
+          description: Created email draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachEmail"
+
+  /outreach/{id}:
+    get:
+      operationId: getOutreach
+      tags: [outreach]
+      summary: Get email draft by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Email draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachEmail"
+    patch:
+      operationId: updateOutreach
+      tags: [outreach]
+      summary: Update an email draft
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OutreachUpdate"
+      responses:
+        "200":
+          description: Updated email draft
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachEmail"
+    delete:
+      operationId: deleteOutreach
+      tags: [outreach]
+      summary: Delete an email draft
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /outreach/{id}/send:
+    post:
+      operationId: sendOutreach
+      tags: [outreach]
+      summary: Send an email draft via SendGrid
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Send result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendResult"
+
+  /outreach/generate:
+    post:
+      operationId: generateOutreach
+      tags: [outreach]
+      summary: AI-generate an outreach email for a project + contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateOutreachInput"
+      responses:
+        "200":
+          description: Generated email draft saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachEmail"
+
+  # ── Chat ──────────────────────────────────────────────────────────────────
+  /chat:
+    get:
+      operationId: listChatMessages
+      tags: [chat]
+      summary: Get chat history for a project
+      parameters:
+        - name: projectId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Chat messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+    post:
+      operationId: sendChatMessage
+      tags: [chat]
+      summary: Send a message to the AI about a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatMessageInput"
+      responses:
+        "200":
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+
+  # ── Dashboard ──────────────────────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Dashboard overview stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +507,324 @@ components:
       required:
         - status
 
+    # Projects
+    Project:
+      type: object
+      required: [id, name, status, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        githubUrl:
+          type: ["string", "null"]
+        repoOwner:
+          type: ["string", "null"]
+        repoName:
+          type: ["string", "null"]
+        language:
+          type: ["string", "null"]
+        stars:
+          type: ["integer", "null"]
+        summary:
+          type: ["string", "null"]
+        valueProp:
+          type: ["string", "null"]
+        targetAudience:
+          type: ["string", "null"]
+        whitepaper:
+          type: ["string", "null"]
+        estimatedValue:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, analyzed, pitching, sold]
+        readme:
+          type: ["string", "null"]
+        topics:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: ["string", "null"]
+
+    ProjectInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        githubUrl:
+          type: string
+        status:
+          type: string
+
+    ProjectUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        estimatedValue:
+          type: string
+        summary:
+          type: string
+        valueProp:
+          type: string
+        targetAudience:
+          type: string
+
+    GithubImportInput:
+      type: object
+      required: [usernames]
+      properties:
+        usernames:
+          type: array
+          items:
+            type: string
+
+    WhitepaperResult:
+      type: object
+      required: [projectId, content]
+      properties:
+        projectId:
+          type: integer
+        content:
+          type: string
+
+    SuggestionsResult:
+      type: object
+      required: [projectId, suggestions]
+      properties:
+        projectId:
+          type: integer
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    # Contacts
+    Contact:
+      type: object
+      required: [id, name, email, type, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: ["string", "null"]
+        title:
+          type: ["string", "null"]
+        type:
+          type: string
+        projectId:
+          type: ["integer", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ContactInput:
+      type: object
+      required: [name, email, type]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        projectId:
+          type: integer
+        notes:
+          type: string
+
+    ContactUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        company:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        notes:
+          type: string
+
+    ContactSuggestion:
+      type: object
+      required: [name, company, type, reason]
+      properties:
+        name:
+          type: string
+        company:
+          type: string
+        type:
+          type: string
+        reason:
+          type: string
+        searchQuery:
+          type: string
+
+    DiscoverContactsInput:
+      type: object
+      required: [projectId]
+      properties:
+        projectId:
+          type: integer
+
+    # Outreach
+    OutreachEmail:
+      type: object
+      required: [id, subject, body, status, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: ["integer", "null"]
+        contactId:
+          type: ["integer", "null"]
+        toEmail:
+          type: string
+        toName:
+          type: ["string", "null"]
+        subject:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+          enum: [draft, sent, failed]
+        sentAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    OutreachInput:
+      type: object
+      required: [subject, body, toEmail]
+      properties:
+        projectId:
+          type: integer
+        contactId:
+          type: integer
+        toEmail:
+          type: string
+        toName:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+
+    OutreachUpdate:
+      type: object
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+        toEmail:
+          type: string
+        toName:
+          type: string
+
+    GenerateOutreachInput:
+      type: object
+      required: [projectId]
+      properties:
+        projectId:
+          type: integer
+        contactId:
+          type: integer
+        toEmail:
+          type: string
+        toName:
+          type: string
+        tone:
+          type: string
+          enum: [professional, friendly, bold]
+
+    SendResult:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    # Chat
+    ChatMessage:
+      type: object
+      required: [id, projectId, role, content, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        createdAt:
+          type: string
+
+    ChatMessageInput:
+      type: object
+      required: [projectId, content]
+      properties:
+        projectId:
+          type: integer
+        content:
+          type: string
+
+    # Dashboard
+    DashboardStats:
+      type: object
+      required: [totalProjects, analyzedProjects, totalContacts, totalEmailsSent, totalEmailsDraft, projectsByStatus]
+      properties:
+        totalProjects:
+          type: integer
+        analyzedProjects:
+          type: integer
+        totalContacts:
+          type: integer
+        totalEmailsSent:
+          type: integer
+        totalEmailsDraft:
+          type: integer
+        projectsByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+        recentActivity:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              description:
+                type: string
+              createdAt:
+                type: string
