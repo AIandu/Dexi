@@ -117,6 +117,32 @@ router.delete("/:id", async (req, res) => {
   res.status(204).send();
 });
 
+router.post("/:id/refresh-readme", async (req, res) => {
+  const id = Number(req.params.id);
+  const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, id));
+  if (!project) return res.status(404).json({ error: "Not found" });
+  if (!project.repoOwner || !project.repoName) return res.status(400).json({ error: "No GitHub repo linked to this project" });
+
+  const token = process.env.GITHUB_TOKEN;
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github.v3.raw",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  try {
+    const readmeRes = await fetch(`https://api.github.com/repos/${project.repoOwner}/${project.repoName}/readme`, { headers });
+    if (!readmeRes.ok) return res.status(400).json({ error: `GitHub returned ${readmeRes.status} — repo may be private or have no README` });
+    const readme = await readmeRes.text();
+    const [updated] = await db.update(projectsTable)
+      .set({ readme: readme.slice(0, 20000), updatedAt: new Date() })
+      .where(eq(projectsTable.id, id))
+      .returning();
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to fetch README from GitHub" });
+  }
+});
+
 router.post("/:id/analyze", async (req, res) => {
   const id = Number(req.params.id);
   const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, id));

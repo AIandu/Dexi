@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Cpu, FileText, Lightbulb, MessageSquare,
-  ChevronLeft, ExternalLink, Code, Activity, Sparkles, SendIcon
+  ChevronLeft, ExternalLink, Code, Activity, Sparkles, SendIcon, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDateTime } from "@/lib/utils";
@@ -127,6 +127,7 @@ function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, on
 function ProjectActions({ project }: { project: any }) {
   const queryClient = useQueryClient();
   const analyze = useAnalyzeProject();
+  const [refreshingReadme, setRefreshingReadme] = useState(false);
 
   const handleAnalyze = () => {
     analyze.mutate({ id: project.id }, {
@@ -138,8 +139,39 @@ function ProjectActions({ project }: { project: any }) {
     });
   };
 
+  const handleRefreshReadme = async () => {
+    setRefreshingReadme(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/refresh-readme`, { method: "POST" });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error(err.error || "Failed to refresh README");
+      } else {
+        toast.success("README refreshed — run Analyze AI to update the assessment");
+        queryClient.invalidateQueries({ queryKey: getGetProjectQueryKey(project.id) });
+      }
+    } catch {
+      toast.error("Failed to refresh README");
+    } finally {
+      setRefreshingReadme(false);
+    }
+  };
+
   return (
     <div className="flex items-center gap-3">
+      {project.repoOwner && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 text-muted-foreground hover:text-foreground"
+          onClick={handleRefreshReadme}
+          disabled={refreshingReadme}
+          title="Re-fetch README from GitHub"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${refreshingReadme ? "animate-spin" : ""}`} />
+          {refreshingReadme ? "Fetching..." : "Refresh README"}
+        </Button>
+      )}
       <Button
         variant="outline"
         className="gap-2 border-primary/30 text-primary hover:bg-primary/10"

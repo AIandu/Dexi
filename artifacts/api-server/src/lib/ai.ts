@@ -19,19 +19,28 @@ export async function analyzeProject(project: {
   targetAudience: string;
   estimatedValue: string;
 }> {
-  const prompt = `You are an expert business analyst and venture scout. Analyze this software project and return a JSON object with these fields:
-- summary: A compelling 2-3 sentence description of what this project does and why it matters
-- valueProp: The core value proposition in 1-2 punchy sentences (what problem it solves, who benefits)
-- targetAudience: Who should buy or invest in this — be specific (e.g. "Series A B2B SaaS startups needing X", "Record labels scouting AI tools")
-- estimatedValue: A realistic valuation/licensing range (e.g. "$5k-$25k freelance build", "$50k-$200k acquisition target", "MVP worth $10k-$50k to investors")
+  const hasReadme = !!project.readme;
+  const hasDescription = !!project.description;
+
+  const prompt = `You are Dexi, a business analyst working for Loretta Chapman. Analyze this specific software project and return a JSON object.
+
+STRICT RULES — violating any of these makes the output worthless:
+1. Every sentence must be grounded in a SPECIFIC detail from the data below. Name the actual thing: a real language, a real topic tag, a real line from the README, the actual repo name.
+2. Do NOT write phrases like "innovative solution," "leverages advanced algorithms," "streamlines processes," "enhances productivity," "cutting-edge," or any phrase that could be copy-pasted onto a different project unchanged.
+3. If the README is missing and the description is thin, say so honestly in the summary and work only from what IS there. Do not invent capabilities.
+4. estimatedValue must be based on: language ecosystem, apparent complexity from the README/topics, and comparable open-source acquisitions — not a default range.
 
 Project name: ${project.name}
-Description: ${project.description || "Not provided"}
 Language: ${project.language || "Unknown"}
 Topics: ${project.topics || "None"}
-README excerpt: ${project.readme ? project.readme.slice(0, 2000) : "Not available"}
+Description: ${hasDescription ? project.description : "None provided"}
+README: ${hasReadme ? project.readme!.slice(0, 3000) : "No README available — work only from name, language, and topics"}
 
-Return only valid JSON, no markdown.`;
+Return ONLY valid JSON with these fields:
+- summary: 2-3 sentences describing what this project actually does, citing specific evidence from the data
+- valueProp: 1-2 sentences on the specific problem it solves, grounded in real details above
+- targetAudience: Specific buyer profile (e.g. "fintech startups building X on Y stack", not "tech companies")
+- estimatedValue: Realistic range with brief reasoning tied to the actual tech and complexity shown`;
 
   const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o-mini",
@@ -52,26 +61,29 @@ export async function generateWhitepaper(project: {
   language?: string | null;
   estimatedValue?: string | null;
 }): Promise<string> {
-  const prompt = `You are a technical writer and business development expert. Write a professional 1-page pitch document / white paper for this software project that could be sent to investors, acquirers, or licensing partners.
+  const prompt = `You are Dexi, writing a pitch document for Loretta Chapman's project. This document will be sent to real buyers and investors. Every claim must be specific and defensible.
+
+STRICT RULES:
+1. Do not write any sentence that could apply unchanged to a different project. Every claim must name something specific to ${project.name}.
+2. Do not use: "innovative," "cutting-edge," "leverages advanced algorithms," "streamlines processes," "enhance productivity," or similar filler.
+3. If data is thin (no summary, no value prop), say what IS known and be honest about what analysis is still needed — do not pad with generic market observations.
+4. The Problem and Our Solution sections must be specific to the actual use case evident in the data, not a generic software category.
 
 Project: ${project.name}
-Summary: ${project.summary || project.description}
-Value Proposition: ${project.valueProp || "Not analyzed yet"}
-Target Audience: ${project.targetAudience || "Not analyzed yet"}
+What it does: ${project.summary || project.description || "Insufficient data — base sections only on the name and technology below"}
+Value Proposition: ${project.valueProp || "Not yet analyzed — note this gap in the document"}
+Target Audience: ${project.targetAudience || "Not yet defined — note this gap"}
 Technology: ${project.language || "Unknown"}
-Estimated Value: ${project.estimatedValue || "TBD"}
+Estimated Value: ${project.estimatedValue || "Not yet assessed"}
 
-Structure it as:
-1. Executive Summary (2-3 sentences)
+Write a pitch document with these sections. Under 600 words. End with a direct call to action naming the specific ask (acquisition conversation, licensing discussion, pilot engagement — pick the one that fits the project):
+1. Executive Summary
 2. The Problem
 3. Our Solution
 4. Technology Overview
-5. Market Opportunity
-6. Target Buyers / Use Cases
-7. Value & Pricing
-8. Next Steps / Call to Action
-
-Keep it under 600 words. Professional but energetic. No fluff. End with a clear CTA.`;
+5. Target Buyers / Use Cases
+6. Value & Pricing
+7. Call to Action`;
 
   const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o-mini",
@@ -88,15 +100,20 @@ export async function generateSuggestions(project: {
   targetAudience?: string | null;
   status: string;
 }): Promise<string[]> {
-  const prompt = `You are a startup advisor and sales strategist. Give 5-7 specific, actionable suggestions to improve and sell this software project. Focus on: landing pages, demo assets, pricing strategies, partnership opportunities, cold outreach tactics, technical improvements that increase value.
+  const prompt = `You are Dexi, a sales strategist working for Loretta Chapman. Give 5-7 specific, actionable suggestions for this project.
+
+STRICT RULES:
+1. Every suggestion must reference something specific to ${project.name} — a real capability, tech choice, or identified audience. No suggestion that could apply to any software project.
+2. Do not suggest "build a landing page" or "write case studies" without specifying exactly what angle, what claim, what audience segment makes it specific to this project.
+3. If data is thin, say so and give fewer, more honest suggestions rather than padding with generic advice.
 
 Project: ${project.name}
-Summary: ${project.summary || "Not analyzed yet"}
+Summary: ${project.summary || "Not yet analyzed — flag this gap"}
 Value Prop: ${project.valueProp || "Unknown"}
 Target Audience: ${project.targetAudience || "Unknown"}
 Current Status: ${project.status}
 
-Return a JSON object with a "suggestions" array of strings. Each suggestion should be 1-2 sentences. No platitudes.`;
+Return a JSON object with a "suggestions" array of strings. Each 1-2 sentences. Specific, not generic.`;
 
   const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o-mini",
