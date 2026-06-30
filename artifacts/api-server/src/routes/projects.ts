@@ -27,15 +27,35 @@ router.post("/import-github", async (req, res) => {
   const { usernames } = req.body as { usernames: string[] };
   if (!usernames?.length) return res.status(400).json({ error: "usernames required" });
 
+  const token = process.env.GITHUB_TOKEN;
+  const ghHeaders: Record<string, string> = {
+    Accept: "application/vnd.github.v3+json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const fetchAllRepos = async (username: string): Promise<any[]> => {
+    const all: any[] = [];
+    let page = 1;
+    while (true) {
+      const url = token
+        ? `https://api.github.com/user/repos?per_page=100&page=${page}&sort=updated&affiliation=owner`
+        : `https://api.github.com/users/${username}/repos?per_page=100&page=${page}&sort=updated`;
+      const resp = await fetch(url, { headers: ghHeaders });
+      if (!resp.ok) break;
+      const batch: any[] = await resp.json();
+      if (!batch.length) break;
+      all.push(...batch);
+      if (batch.length < 100) break;
+      page++;
+    }
+    return all;
+  };
+
   const imported: any[] = [];
 
   for (const username of usernames) {
     try {
-      const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`, {
-        headers: { Accept: "application/vnd.github.v3+json" },
-      });
-      if (!reposResponse.ok) continue;
-      const repos: any[] = await reposResponse.json();
+      const repos = await fetchAllRepos(username);
 
       for (const repo of repos) {
         if (repo.fork) continue;
@@ -43,7 +63,7 @@ router.post("/import-github", async (req, res) => {
         let readme: string | null = null;
         try {
           const readmeRes = await fetch(`https://api.github.com/repos/${repo.full_name}/readme`, {
-            headers: { Accept: "application/vnd.github.v3.raw" },
+            headers: { ...ghHeaders, Accept: "application/vnd.github.v3.raw" },
           });
           if (readmeRes.ok) readme = await readmeRes.text();
         } catch { /* no readme */ }
