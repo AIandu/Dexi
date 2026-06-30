@@ -129,7 +129,7 @@ function ProjectActions({ project }: { project: any }) {
   const analyze = useAnalyzeProject();
 
   const handleAnalyze = () => {
-    analyze.mutate({ params: { id: project.id } }, {
+    analyze.mutate({ id: project.id }, {
       onSuccess: () => {
         toast.success("Analysis complete");
         queryClient.invalidateQueries({ queryKey: getGetProjectQueryKey(project.id) });
@@ -183,7 +183,7 @@ function WhitepaperView({ project }: { project: any }) {
   const generate = useGenerateWhitepaper();
 
   const handleGenerate = () => {
-    generate.mutate({ params: { id: project.id } }, {
+    generate.mutate({ id: project.id }, {
       onSuccess: () => {
         toast.success("Whitepaper generated");
         queryClient.invalidateQueries({ queryKey: getGetProjectQueryKey(project.id) });
