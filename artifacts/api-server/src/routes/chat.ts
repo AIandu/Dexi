@@ -217,4 +217,10 @@ ${projectContext}`
   res.json(aiMessage);
 });
 
+router.delete("/:projectId/clear", async (req, res) => {
+  const projectId = Number(req.params.projectId);
+  await db.delete(chatMessagesTable).where(eq(chatMessagesTable.projectId, projectId));
+  res.status(204).send();
+});
+
 export default router;

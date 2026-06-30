@@ -5,7 +5,8 @@ import {
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { SendIcon, BrainCircuit } from "lucide-react";
+import { SendIcon, BrainCircuit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function GlobalChat() {
   const projectId = 0;
@@ -13,6 +14,7 @@ export default function GlobalChat() {
   const sendMsg = useSendChatMessage();
   const queryClient = useQueryClient();
   const [content, setContent] = useState("");
+  const [clearing, setClearing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -41,12 +43,40 @@ export default function GlobalChat() {
     }
   };
 
+  const handleClearChat = async () => {
+    setClearing(true);
+    try {
+      const res = await fetch(`/api/chat/${projectId}/clear`, { method: "DELETE" });
+      if (res.ok) {
+        queryClient.invalidateQueries({ queryKey: ["/api/chat", { projectId }] });
+        toast.success("Chat cleared");
+      } else {
+        toast.error("Failed to clear chat");
+      }
+    } catch {
+      toast.error("Failed to clear chat");
+    } finally {
+      setClearing(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full w-full relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_100%,rgba(124,58,237,0.12),transparent)] pointer-events-none z-0" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(124,58,237,0.06),transparent)] pointer-events-none z-0" />
 
-      <div className="shrink-0 pt-5 pb-3 flex flex-col items-center z-10 pl-16">
+      <div className="shrink-0 pt-5 pb-3 flex flex-col items-center z-10 pl-16 relative">
+        {messages && messages.length > 0 && (
+          <button
+            onClick={handleClearChat}
+            disabled={clearing}
+            title="Clear chat"
+            className="absolute right-4 top-5 flex items-center gap-1.5 text-xs text-muted-foreground/50 hover:text-red-400 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Clear
+          </button>
+        )}
         <div className="w-14 h-14 rounded-2xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center shadow-[0_0_30px_rgba(124,58,237,0.4)] mb-2">
           <BrainCircuit className="w-7 h-7 text-primary" />
         </div>
