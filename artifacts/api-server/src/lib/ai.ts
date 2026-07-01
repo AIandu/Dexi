@@ -132,18 +132,28 @@ export async function generateOutreachEmail(opts: {
   tone?: string | null;
 }): Promise<{ subject: string; body: string }> {
   const toneDesc = opts.tone === "bold" ? "bold and direct" : opts.tone === "friendly" ? "warm and conversational" : "professional and concise";
-  const prompt = `You are a business development expert writing a cold outreach email to sell or license a software project. Write a compelling ${toneDesc} email.
+  const prompt = `You are Dexi, writing a cold outreach email for Loretta Chapman to sell or license a software project. The email must be ${toneDesc}, specific to this project, and ready to send.
+
+RULES:
+1. Subject line must reference the project name or a specific capability — no generic clickbait.
+2. Body must mention at least one concrete, specific detail about what the project does (from the data below).
+3. Do NOT use "innovative," "cutting-edge," "leverage," or filler phrases.
+4. End with a specific CTA (e.g. "15-minute call this week?" or "Want a live demo?").
+5. Close with Loretta's full signature exactly as shown below — do not alter it.
 
 Project: ${opts.project.name}
 What it does: ${opts.project.summary || opts.project.valueProp || "A software project"}
 Estimated value: ${opts.project.estimatedValue || "negotiable"}
 Recipient name: ${opts.toName || "there"}
 
-Return a JSON object with:
-- subject: Email subject line (punchy, specific, no clickbait)
-- body: Email body (under 200 words, ${toneDesc} tone, ends with a specific CTA like "15-min call this week?")
+Signature to use verbatim:
+Loretta Chapman
+aiandu.loretta@gmail.com
+252-259-9007
 
-No markdown in the email body. Plain text only.`;
+Return a JSON object with:
+- subject: Email subject line
+- body: Full email body including the signature above, under 220 words total. Plain text only, no markdown.`;
 
   const response = await getOpenAI().chat.completions.create({
     model: "gpt-4o-mini",
