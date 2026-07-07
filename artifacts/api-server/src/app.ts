@@ -32,14 +32,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // 2. Route API endpoints first
 app.use("/api", router);
-
-// 3. Serve the static frontend files from the workspace build folder
-const frontendBuildPath = path.resolve(__dirname, "../../mind-partner/dist");
-app.use(express.static(frontendBuildPath));
+// 3. Serve the static frontend files from the workspace build folder safely
+app.use(express.static(path.join(process.cwd(), "artifacts/mind-partner/dist")));
 
 // 4. Fallback route so frontend routing doesn't break on a page refresh
 app.get("*", (req, res) => {
-  res.sendFile(path.join(frontendBuildPath, "index.html"));
+  res.sendFile(path.join(process.cwd(), "artifacts/mind-partner/dist/index.html"));
 });
+
 
 export default app;
