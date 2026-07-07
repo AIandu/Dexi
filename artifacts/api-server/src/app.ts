@@ -33,11 +33,12 @@ app.use(express.urlencoded({ extended: true }));
 // 2. Route API endpoints first
 app.use("/api", router);
 // 3. Serve the static frontend files safely by forcing a root mount point
-app.use("/", express.static(path.join(process.cwd(), "artifacts/mind-partner/dist")));
+const frontendDist = path.join(process.cwd(), "artifacts/mind-partner/dist/public");
+app.use("/", express.static(frontendDist));
 
 // 4. Fallback route handler so frontend routing doesn't break on a page refresh
 app.use((req, res) => {
-  res.sendFile(path.join(process.cwd(), "artifacts/mind-partner/dist/index.html"));
+  res.sendFile(path.join(frontendDist, "index.html"));
 });
 
 
