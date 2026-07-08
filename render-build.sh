@@ -6,6 +6,7 @@ sed -i 's/"preinstall": ".*"//g' package.json
 
 # Enable pnpm via Corepack, installed to a writable directory
 # (Render's /usr/bin is read-only and already has a system pnpm symlink)
+mkdir -p "$HOME/.local/bin"
 export COREPACK_HOME="$HOME/.corepack"
 corepack enable --install-directory "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
