@@ -33,13 +33,13 @@ minimumReleaseAgeExclude:
   # this setting guards against does not apply to our own packages.
   - '@replit/*'
   - stripe-replit-sync
+  - esbuild
 
 packages:
   - artifacts/*
   - lib/*
   - lib/integrations/*
   - scripts
-  -esbuild
 
 catalog:
   '@replit/vite-plugin-cartographer': ^0.5.21
