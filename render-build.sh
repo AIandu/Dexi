@@ -4,8 +4,11 @@ set -e
 # Clear out the preinstall block dynamically for Render's static builder
 sed -i 's/"preinstall": ".*"//g' package.json
 
-# Enable pnpm via Corepack (avoids writing to read-only /usr/lib/node_modules)
-corepack enable
+# Enable pnpm via Corepack, installed to a writable directory
+# (Render's /usr/bin is read-only and already has a system pnpm symlink)
+export COREPACK_HOME="$HOME/.corepack"
+corepack enable --install-directory "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
 corepack prepare pnpm@latest --activate
 
 # Install all workspace dependencies
