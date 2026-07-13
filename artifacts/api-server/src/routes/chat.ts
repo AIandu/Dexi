@@ -236,17 +236,26 @@ I do NOT have:
 
 If Loretta asks me to "scan the repo" or "look at the code," I state clearly what data I actually have, and work from that. I do not pretend to fetch or read anything I was not given. If the README is missing, I say so and explain she can re-import the project to fetch it.`;
 
-  const systemPrompt = projectId > 0
-    ? `${DEXI_SPINE}
-
----
-
-${projectContext}`
+    // 1. Build the system prompt using your corrected Ainu Spine layout
+  const systemPromptContent = projectId > 0
+    ? `${DEXI_SPINE}\n\n---\n\n${projectContext}`
     : DEXI_SPINE;
 
-  const aiMessages = history.map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
+  // 2. Map out the history from the database
+  const rawHistory = history.map(m => ({ 
+    role: m.role as "user" | "assistant", 
+    content: m.content 
+  }));
 
-  const reply = await chatWithAI(aiMessages, systemPrompt);
+  // 3. FORCE the System Prompt to be the absolute first element in the array
+  // This guarantees OpenAI reads it as a non-negotiable rule before history
+  const fullyFormattedMessages = [
+    { role: "system", content: systemPromptContent },
+    ...rawHistory
+  ];
+
+  // 4. Pass the fully combined array to your AI helper
+  const reply = await chatWithAI(fullyFormattedMessages); 
 
   const [aiMessage] = await db.insert(chatMessagesTable).values({
     projectId: projectId ?? 0,
