@@ -236,7 +236,7 @@ I do NOT have:
 
 If Loretta asks me to "scan the repo" or "look at the code," I state clearly what data I actually have, and work from that. I do not pretend to fetch or read anything I was not given. If the README is missing, I say so and explain she can re-import the project to fetch it.`;
 
-      // 1. Build the system context using your Spine layout
+       // 1. Build the system context using your Spine layout
   const systemPrompt = projectId > 0
     ? `${DEXI_SPINE}\n\n---\n\n${projectContext}`
     : DEXI_SPINE;
@@ -247,26 +247,15 @@ If Loretta asks me to "scan the repo" or "look at the code," I state clearly wha
     content: m.content 
   }));
 
-  // 3. ENFORCEMENT LAYER: Directly inject the rules right into the active flow
+  // 3. ENFORCEMENT LAYER: Push a hard reminder straight to the end of the history array.
+  // This blocks her from copying old bad habits and forces her to read the Spine rules.
   aiMessages.push({
     role: "user",
-    content: `[CRITICAL RUNTIME REMINDER: You must strictly execute according to the CANONICAL SPINE guidelines. 
-    Do not fabricate memory or access. Do not use generic boilerplate template language. 
-    Ground every single sentence in actual project data or state the gap honestly. 
-    Follow the 8-step Decision Flow completely for this response.]`
+    content: `[SYSTEM ENFORCEMENT PROTOCOL: You must strictly execute according to the CANONICAL SPINE rules. Do not fabricate features or data access. Do not use generic boilerplate phrases. Ground every sentence in actual project data or state the gap honestly. Follow your 8-step Decision Flow right now.]`
   });
 
-  // 4. Force use of the full gpt-4o intelligence weight
-  // We pass 'gpt-4o' to ensure she has the cognitive capacity to stick to your strict bounds
-  const response = await getOpenAI().chat.completions.create({
-    model: "gpt-4o", 
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...aiMessages
-    ]
-  });
-
-  const reply = response.choices[0].message.content ?? "I couldn't generate a response.";
+  // 4. Send the updated array to your existing helper
+  const reply = await chatWithAI(aiMessages, systemPrompt);
 
   // 5. Save the assistant's reply to the database
   const [aiMessage] = await db.insert(chatMessagesTable).values({
@@ -276,6 +265,7 @@ If Loretta asks me to "scan the repo" or "look at the code," I state clearly wha
   }).returning();
 
   res.json(aiMessage);
+
 });
 
 
