@@ -236,7 +236,7 @@ I do NOT have:
 
 If Loretta asks me to "scan the repo" or "look at the code," I state clearly what data I actually have, and work from that. I do not pretend to fetch or read anything I was not given. If the README is missing, I say so and explain she can re-import the project to fetch it.`;
 
-       // 1. Build the system context using your Spine layout
+         // 1. Build the system context using your Spine layout
   const systemPrompt = projectId > 0
     ? `${DEXI_SPINE}\n\n---\n\n${projectContext}`
     : DEXI_SPINE;
@@ -248,7 +248,6 @@ If Loretta asks me to "scan the repo" or "look at the code," I state clearly wha
   }));
 
   // 3. ENFORCEMENT LAYER: Push a hard reminder straight to the end of the history array.
-  // This blocks her from copying old bad habits and forces her to read the Spine rules.
   aiMessages.push({
     role: "user",
     content: `[SYSTEM ENFORCEMENT PROTOCOL: You must strictly execute according to the CANONICAL SPINE rules. Do not fabricate features or data access. Do not use generic boilerplate phrases. Ground every sentence in actual project data or state the gap honestly. Follow your 8-step Decision Flow right now.]`
@@ -265,23 +264,6 @@ If Loretta asks me to "scan the repo" or "look at the code," I state clearly wha
   }).returning();
 
   res.json(aiMessage);
-
-});
-
-
-  const [aiMessage] = await db.insert(chatMessagesTable).values({
-    projectId: projectId ?? 0,
-    role: "assistant",
-    content: reply,
-  }).returning();
-
-  res.json(aiMessage);
-});
-
-router.delete("/:projectId/clear", async (req, res) => {
-  const projectId = Number(req.params.projectId);
-  await db.delete(chatMessagesTable).where(eq(chatMessagesTable.projectId, projectId));
-  res.status(204).send();
 });
 
 export default router;
